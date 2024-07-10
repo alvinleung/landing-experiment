@@ -1,7 +1,6 @@
 import { proxy, subscribe } from "valtio";
 import { AnimationLoop, AnimationLoopDelegate } from "./AnimationLoop";
 import { LerpFrameAnimator } from "./Animators/LerpFrameAnimator";
-import { FrameAnimator } from "./Animators/FrameAnimator";
 import { LaunchFrameAnimator } from "./Animators/LaunchFrameAnimator";
 import CleanupProtocol from "cleanup-protocol";
 
@@ -10,6 +9,8 @@ export interface AnimationState {
   target: number;
   velocity: number;
   prevValue: number;
+  acceleration: number;
+  prevVelocity: number;
 }
 
 export class AnimatedValue implements CleanupProtocol {
@@ -23,6 +24,8 @@ export class AnimatedValue implements CleanupProtocol {
     target: 0,
     velocity: 0,
     prevValue: 0,
+    acceleration: 0,
+    prevVelocity: 0
   });
 
   private lerpAnimator = new LerpFrameAnimator();

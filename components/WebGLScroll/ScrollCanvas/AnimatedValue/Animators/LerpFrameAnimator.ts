@@ -25,8 +25,15 @@ export class LerpFrameAnimator implements CleanupProtocol, FrameAnimator {
 
     state.current = state.current + (state.target - state.current) * scaledLerp;
 
+    // Update prevVelocity before calculating the new velocity
+    state.prevVelocity = state.velocity;
+
+    // Calculate new velocity
     state.velocity = state.current - state.prevValue;
     state.prevValue = state.current;
+
+    // Calculate acceleration
+    state.acceleration = state.velocity - state.prevVelocity;
 
     if (Math.abs(state.velocity) < STOP_THRESHOLD) {
       state.current = state.target;

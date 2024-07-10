@@ -35,6 +35,16 @@ export class AnimationLoop implements CleanupProtocol {
   public stop() {
     this.isAnimating = false;
     cancelAnimationFrame(this.animFrame);
+
+
+    if (!this.animState) return;
+    this.resetVelocityAndAcceleration(this.animState);
+  }
+
+  private resetVelocityAndAcceleration(animState: AnimationState) {
+    animState.acceleration = 0;
+    animState.prevVelocity = animState.velocity;
+    animState.velocity = 0;
   }
 
   private loop(delta = 0) {

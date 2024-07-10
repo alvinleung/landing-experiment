@@ -20,8 +20,8 @@ export class LaunchFrameAnimator implements FrameAnimator, CleanupProtocol {
     this.bound = bound;
     return this;
   }
+
   animate(state: AnimationState, delta: number): boolean {
-    const STOP_THRESHOLD = 0.01; // Set your stop threshold here
 
     // Update velocity based on dampening
     this.velocity *= 1 - this.damp * delta;
@@ -31,20 +31,22 @@ export class LaunchFrameAnimator implements FrameAnimator, CleanupProtocol {
     const current = state.current + vel;
     const clampedCurrent = clamp(current, this.bound.min, this.bound.max);
 
+    // Update state before assigning new values
+    state.prevVelocity = state.velocity;
+
     state.current = clampedCurrent;
     state.velocity = this.velocity;
-
-    // console.log("clamped", clampedCurrent, "current", current);
+    state.acceleration = state.velocity - state.prevVelocity;
 
     const hasHitBound = current !== clampedCurrent;
 
     // Check if velocity is below stop threshold
     if (Math.abs(this.velocity) < STOP_THRESHOLD || hasHitBound) {
-      // state.current = state.target;
       return false; // Animation finished
     }
 
     return true; // Continue animation
   }
-  cleanup(): void {}
+
+  cleanup(): void { }
 }
