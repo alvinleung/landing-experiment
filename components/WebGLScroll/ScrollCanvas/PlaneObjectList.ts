@@ -5,18 +5,20 @@ import { ScrollCanvasRenderingInfo } from "./ScrollCanvas";
 
 export class PlaneObjectList implements CleanupProtocol {
   private _planes: PlaneObject[] = [];
-  // eslint-disable-next-line enforce-cleanup/call-cleanup
   public static empty = new PlaneObjectList();
 
   create() {
-    // eslint-disable-next-line enforce-cleanup/call-cleanup
     const plane = new PlaneObject();
     this._planes.push(plane);
 
     return plane;
   }
 
-  update(gl: OGLRenderingContext, scene: Transform, info: ScrollCanvasRenderingInfo) {
+  update(
+    gl: OGLRenderingContext,
+    scene: Transform,
+    info: ScrollCanvasRenderingInfo
+  ) {
     for (let i = 0; i < this._planes.length; i++) {
       this._planes[i].update(gl, scene, info);
     }

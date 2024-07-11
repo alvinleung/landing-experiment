@@ -20,7 +20,6 @@ export class PointerInfoProvider implements CleanupProtocol {
     window.addEventListener("pointerup", this.handlePointerUp.bind(this));
     window.addEventListener("pointermove", this.handlePointerMove.bind(this));
 
-    // eslint-disable-next-line enforce-cleanup/call-cleanup
     this._resizeObserver = new ResizeObserver(this.handleResize.bind(this));
     this._resizeObserver.observe(this._canvas);
   }
@@ -45,15 +44,19 @@ export class PointerInfoProvider implements CleanupProtocol {
     this._mousePosition.x = e.clientX - this._canvasLeft;
     this._mousePosition.y = e.clientY - this._canvasTop;
 
-    this._mousePositionNormalized.x = (this._mousePosition.x / window.innerWidth) * 2 - 1;
-    this._mousePositionNormalized.y = -(this._mousePosition.y / window.innerHeight) * 2 + 1;
+    this._mousePositionNormalized.x =
+      (this._mousePosition.x / window.innerWidth) * 2 - 1;
+    this._mousePositionNormalized.y =
+      -(this._mousePosition.y / window.innerHeight) * 2 + 1;
   }
 
   private handleResize() {
     this.updateCanvasDimensions();
     // Recalculate normalized position based on the new size if needed
-    this._mousePositionNormalized.x = (this._mousePosition.x / window.innerWidth) * 2 - 1;
-    this._mousePositionNormalized.y = -(this._mousePosition.y / window.innerHeight) * 2 + 1;
+    this._mousePositionNormalized.x =
+      (this._mousePosition.x / window.innerWidth) * 2 - 1;
+    this._mousePositionNormalized.y =
+      -(this._mousePosition.y / window.innerHeight) * 2 + 1;
   }
 
   get isMouseDown() {

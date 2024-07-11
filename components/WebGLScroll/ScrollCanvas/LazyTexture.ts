@@ -1,12 +1,11 @@
 import { OGLRenderingContext, Texture, TextureOptions } from "ogl";
 
 /**
-  * 
-  * Lazy init version of the ogl texture,
-  * it only init first run in the texture.
-  *
-  */
-// eslint-disable-next-line enforce-cleanup/implement-cleanup
+ *
+ * Lazy init version of the ogl texture,
+ * it only init first run in the texture.
+ *
+ */
 export class LazyTexture {
   private _texture: Texture | undefined;
   private config: Partial<TextureOptions>;

@@ -5,7 +5,6 @@ export class ShaderRepository implements CleanupProtocol {
   private static _instance: ShaderRepository;
   public static get instance(): ShaderRepository {
     if (!ShaderRepository._instance) {
-      // eslint-disable-next-line enforce-cleanup/call-cleanup
       ShaderRepository._instance = new ShaderRepository();
     }
     return ShaderRepository._instance;
