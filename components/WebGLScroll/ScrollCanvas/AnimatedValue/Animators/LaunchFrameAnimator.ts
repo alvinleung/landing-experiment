@@ -38,6 +38,10 @@ export class LaunchFrameAnimator implements FrameAnimator, CleanupProtocol {
     state.velocity = this.velocity;
     state.acceleration = state.velocity - state.prevVelocity;
 
+
+    // TODO: make this logic caclulate only once
+    state.target = this.projectStoppingTarget(state, 1000000);
+
     const hasHitBound = current !== clampedCurrent;
 
     // Check if velocity is below stop threshold
@@ -46,6 +50,15 @@ export class LaunchFrameAnimator implements FrameAnimator, CleanupProtocol {
     }
 
     return true; // Continue animation
+  }
+
+  private projectStoppingTarget(state: AnimationState, delta: number) {
+    // Calculate the projected stopping point based on exponential decay
+    const projectedTarget = state.current + (this.velocity / (this.damp * (1 - Math.exp(-this.damp * delta))));
+    // Clamp the projected target to the bounds
+    const clampedTarget = clamp(projectedTarget, this.bound.min, this.bound.max);
+
+    return clampedTarget;
   }
 
   cleanup(): void { }

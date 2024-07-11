@@ -1,14 +1,19 @@
 import {
   RefObject,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
+  useState,
 } from "react";
 import { useResizeObserver, useWindowSize } from "usehooks-ts";
 import { AnimatedValue } from "./ScrollCanvas/AnimatedValue/AnimatedValue";
 import { useAnimatedValue } from "./ScrollCanvas/AnimatedValue/useAnimatedValue";
 import { clamp } from "@/utils/clamp";
+import { SnapPoint } from "./SnapPoint";
+import { Status } from "status-hud";
+import { debounce } from "@/utils/debounce";
 
 export interface ScrollState {
   current: number;
@@ -17,6 +22,8 @@ export interface ScrollState {
 
 const VirtualScrollContext = createContext({
   scroll: AnimatedValue.empty,
+  addSnapPoint: (snapPoint: SnapPoint) => { },
+  removeSnapPoint: (snapPoint: SnapPoint) => { },
 });
 
 export const useVirtualScroll = () => useContext(VirtualScrollContext);
@@ -31,6 +38,12 @@ export const VirtualScrollProvider = ({
 }: React.PropsWithChildren<Props>) => {
   const virtualScrollValue = useAnimatedValue();
 
+  const [snapPoints, setSnapPoints] = useState([] as SnapPoint[]);
+  const sortedSnapPoints = useMemo(() => {
+    return snapPoints.sort((a, b) => a.position - b.position)
+  }, [snapPoints])
+
+
   const { height: pageHeight } = useResizeObserver({ ref: contentRef });
   const { height: windowHeight } = useWindowSize({
     initializeWithValue: false,
@@ -44,18 +57,27 @@ export const VirtualScrollProvider = ({
   // handle wheel input
   useEffect(() => {
     const MAX_DELTA = 100;
+    const SCROLL_STOP_DEBOUNCE = 50;
+
+    const stopScrollingDebounced = debounce(() => {
+      snaptToNearest(virtualScrollValue, snapPoints)
+    }, SCROLL_STOP_DEBOUNCE);
+
     const handleWheel = (e: WheelEvent) => {
       const delta = -clamp(e.deltaY, -MAX_DELTA, MAX_DELTA);
       const newPos = virtualScrollValue.getTarget() + delta * 2;
       const clampedPos = clamp(newPos, -maxScroll, 0);
       virtualScrollValue.lerpTo(clampedPos, 0.24);
+
+      stopScrollingDebounced();
     };
 
     window.addEventListener("wheel", handleWheel);
     return () => {
+      stopScrollingDebounced.abort();
       window.removeEventListener("wheel", handleWheel);
     };
-  }, [maxScroll, virtualScrollValue]);
+  }, [maxScroll, virtualScrollValue, snapPoints]);
 
   // handle touch input
   useEffect(() => {
@@ -76,6 +98,9 @@ export const VirtualScrollProvider = ({
         min: -(pageHeight - windowHeight),
         max: 0,
       });
+
+      // snap to nearest
+      snaptToNearest(virtualScrollValue, snapPoints)
     };
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault();
@@ -98,13 +123,84 @@ export const VirtualScrollProvider = ({
     };
   }, [maxScroll, virtualScrollValue, pageHeight, windowHeight]);
 
+
+  // ============================================
+  // Scroll snap implementation
+  // ============================================
+  const addSnapPoint = useCallback((snapPoint: SnapPoint) => {
+    setSnapPoints((snapPoints) => {
+      return [...snapPoints, snapPoint];
+    })
+  }, []);
+  const removeSnapPoint = useCallback((snapPoint: SnapPoint) => {
+    setSnapPoints((snapPoints) => {
+      return snapPoints.filter((point) => point.id != snapPoint.id);
+    })
+  }, []);
+
+
+  useEffect(() => {
+    const cleanup = virtualScrollValue.onChange((state) => {
+      const nearest = getNearestSnapPoint(
+        sortedSnapPoints,
+        -state.target,
+        state.velocity,
+        window.innerHeight / 2
+      );
+
+      Status.log("heading to snappoint", nearest);
+      Status.log("target", -state.target);
+    })
+    return () => {
+      cleanup();
+    }
+  }, [sortedSnapPoints])
   return (
     <VirtualScrollContext.Provider
       value={{
         scroll: virtualScrollValue,
+        addSnapPoint,
+        removeSnapPoint,
       }}
     >
       {children}
     </VirtualScrollContext.Provider>
   );
 };
+
+function snaptToNearest(virtualScrollValue: AnimatedValue, snapPoints: SnapPoint[]) {
+  const vel = virtualScrollValue.getVelocity();
+  const target = virtualScrollValue.getTarget();
+  const nearest = getNearestSnapPoint(snapPoints, -target, vel, window.innerHeight);
+  if (nearest) {
+    console.log(`Snapping to`, nearest)
+    const distanceAbs = Math.abs(nearest.position - virtualScrollValue.getCurrent());
+    const lerpResponsiveness = 0.2 * distanceAbs * .0001;
+    console.log(lerpResponsiveness);
+    virtualScrollValue.lerpTo(-nearest.position, .1);
+  }
+}
+
+
+function getNearestSnapPoint(
+  points: SnapPoint[],
+  projectedEndPoint: number,
+  velocity: number,
+  snapMargin: number = 400
+): SnapPoint | undefined {
+  let targetSnapPoint: SnapPoint | undefined = undefined;
+
+  for (let i = 0; i < points.length; i++) {
+    const point = points[i];
+    const distToPoint = projectedEndPoint - point.position;
+
+    if (Math.abs(distToPoint) > snapMargin) continue;
+
+    // const isHeadingTowardPoint = distToPoint * velocity > 0;
+    const isHeadingTowardPoint = distToPoint * velocity > 0;
+    if (isHeadingTowardPoint) {
+      targetSnapPoint = point;
+    }
+  }
+  return targetSnapPoint;
+}
