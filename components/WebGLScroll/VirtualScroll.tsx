@@ -57,7 +57,7 @@ export const VirtualScrollProvider = ({
   // handle wheel input
   useEffect(() => {
     const MAX_DELTA = 100;
-    const SCROLL_STOP_DEBOUNCE = 100;
+    const SCROLL_STOP_DEBOUNCE = 160;
 
     const stopScrollingDebounced = debounce(() => {
       snaptToNearest(virtualScrollValue, snapPoints)
@@ -176,8 +176,9 @@ function getSnapInstruction(
   points: SnapPoint[],
   projectedEndPoint: number,
   velocity: number,
-  snapMargin: number = window.innerHeight,
-  snapThreshold: number = .6,
+  snapMargin = window.innerHeight,
+  enterThreshold = .8,
+  exitThreshold = .2
 ): SnapInstruction | undefined {
   let snapInstruction: SnapInstruction | undefined;
 
@@ -185,15 +186,25 @@ function getSnapInstruction(
     const point = points[i];
     const distToPoint = projectedEndPoint - point.position;
     const hasPastPoint = distToPoint > 0;
+    const isHeadingTowardPoint = distToPoint * velocity > 0;
+
+    console.log(distToPoint)
+
+    if (hasPastPoint && distToPoint < window.innerHeight && isHeadingTowardPoint) {
+      snapInstruction = {
+        position: point.position,
+        alignment: "top"
+      }
+      continue;
+    }
 
     if (Math.abs(distToPoint) > snapMargin || hasPastPoint) continue;
 
-    const isHeadingTowardPoint = distToPoint * velocity > 0;
     const snapOverlap = Math.abs(distToPoint / snapMargin);
-    const isOverEnterThreshold = snapOverlap < snapThreshold;
 
-    console.log(snapOverlap);
-    if ((isOverEnterThreshold || isHeadingTowardPoint)) {
+    if (isHeadingTowardPoint && snapOverlap < enterThreshold ||
+      !isHeadingTowardPoint && snapOverlap < exitThreshold) {
+
       snapInstruction = {
         position: point.position,
         alignment: "top"

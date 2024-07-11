@@ -21,12 +21,16 @@ export default function Home() {
       <div className="min-h-screen text-9xl bg-white text-black">
         We’re excited by the possibilities of technology, constantly exploring new means of expression and highly detailed in their practice.
       </div>
-      <div className="min-h-screen text-9xl bg-white text-black">
-        We’re excited by the possibilities of technology, constantly exploring new means of expression and highly detailed in their practice.
-      </div>
-      <div className="min-h-screen text-9xl bg-white text-black">
-        We’re excited by the possibilities of technology, constantly exploring new means of expression and highly detailed in their practice.
-      </div>
+      <SnapContainer>
+        <div className="min-h-screen text-9xl bg-red-300 text-black">
+          We’re excited by the possibilities of technology, constantly exploring new means of expression and highly detailed in their practice.
+        </div>
+      </SnapContainer>
+      <SnapContainer>
+        <div className="min-h-screen text-9xl bg-white text-black">
+          We’re excited by the possibilities of technology, constantly exploring new means of expression and highly detailed in their practice.
+        </div>
+      </SnapContainer>
       {/* </SnapContainer> */}
     </main>
     <footer>
