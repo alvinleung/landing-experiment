@@ -22,7 +22,6 @@ export class ImageAsset implements Asset, CleanupProtocol {
   }
   public load(): Promise<Asset> {
     // start loading
-    // eslint-disable-next-line enforce-cleanup/call-cleanup
     return new Promise((resolve, reject) => {
       this._isLoading = true;
 

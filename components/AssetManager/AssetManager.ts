@@ -7,10 +7,9 @@ export class AssetManager implements CleanupProtocol {
   private loadingProgress = 0;
   private loadedAssetCount = 0;
 
-  private constructor() { }
+  private constructor() {}
   public static get instance() {
     // Do you need arguments? Make it a regular static method instead.
-    // eslint-disable-next-line enforce-cleanup/call-cleanup
     return this._instance || (this._instance = new this());
   }
 
@@ -59,7 +58,8 @@ export class AssetManager implements CleanupProtocol {
     );
 
     console.log(
-      `Loading ${filteredLoookup.length} assets, ${allAssets.length - filteredLoookup.length
+      `Loading ${filteredLoookup.length} assets, ${
+        allAssets.length - filteredLoookup.length
       } is already initiated or finished loading`
     );
 

@@ -13,7 +13,7 @@ export class AudioController implements CleanupProtocol {
     this._isMuted = true;
 
     // go through all audio asset and mute all
-    const assets = AssetManager.getInstance();
+    const assets = AssetManager.instance;
     const allAudio = assets.findAll<AudioAsset>((id, asset) => {
       return asset instanceof AudioAsset;
     });
@@ -26,12 +26,11 @@ export class AudioController implements CleanupProtocol {
   public static unmute() {
     this._isMuted = true;
 
-    const assets = AssetManager.getInstance();
+    const assets = AssetManager.instance;
     const allAudio = assets.findAll<AudioAsset>((id, asset) => {
       // console.log(asset instanceof AudioAsset);
       return asset instanceof AudioAsset;
     });
-    console.log(allAudio);
     Object.entries(allAudio).map(([id, audio]) => {
       audio.unmute();
     });
@@ -42,7 +41,6 @@ export class AudioAsset implements Asset, CleanupProtocol {
   private _isloaded = false;
   private _isLoading = false;
   private src: string;
-  // eslint-disable-next-line enforce-cleanup/call-cleanup
   private audio = new Audio();
 
   private isMuted = false;
@@ -103,7 +101,6 @@ export class AudioAsset implements Asset, CleanupProtocol {
 
   public load(): Promise<Asset> {
     // start loading
-    // eslint-disable-next-line enforce-cleanup/call-cleanup
     return new Promise((resolve, reject) => {
       this._isLoading = true;
 

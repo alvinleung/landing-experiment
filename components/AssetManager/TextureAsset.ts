@@ -21,7 +21,6 @@ export class TextureAsset implements Asset, CleanupProtocol {
     return this._isloaded;
   }
   public load(): Promise<Asset> {
-    // eslint-disable-next-line enforce-cleanup/call-cleanup
     return new Promise((resolve, reject) => {
       this._isLoading = true;
 

@@ -15,7 +15,6 @@ export interface AnimationState {
 
 export class AnimatedValue implements CleanupProtocol {
   // an empty value place holder, most useful for creating react context
-  // eslint-disable-next-line enforce-cleanup/call-cleanup
   public static empty = new AnimatedValue(0);
   private loop: AnimationLoop;
 
@@ -25,7 +24,7 @@ export class AnimatedValue implements CleanupProtocol {
     velocity: 0,
     prevValue: 0,
     acceleration: 0,
-    prevVelocity: 0
+    prevVelocity: 0,
   });
 
   private lerpAnimator = new LerpFrameAnimator();
