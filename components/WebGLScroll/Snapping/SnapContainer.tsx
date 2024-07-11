@@ -1,5 +1,5 @@
 import React, { MutableRefObject, useEffect, useRef } from 'react'
-import { useVirtualScroll } from './VirtualScroll';
+import { useVirtualScroll } from '../VirtualScroll';
 import { createSnapPoint, updateSnapPoint } from './SnapPoint';
 
 type Props = {}

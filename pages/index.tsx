@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Inter } from "next/font/google";
 import WebGLScrollContainer from "@/components/WebGLScroll/WebGLScrollContainer";
 import { MutableRefObject, RefObject, useRef } from "react";
-import SnapContainer from "@/components/WebGLScroll/SnapContainer";
+import SnapContainer from "@/components/WebGLScroll/Snapping/SnapContainer";
 
 const inter = Inter({ subsets: ["latin"] });
 

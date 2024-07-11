@@ -11,7 +11,7 @@ import { useResizeObserver, useWindowSize } from "usehooks-ts";
 import { AnimatedValue } from "./ScrollCanvas/AnimatedValue/AnimatedValue";
 import { useAnimatedValue } from "./ScrollCanvas/AnimatedValue/useAnimatedValue";
 import { clamp } from "@/utils/clamp";
-import { SnapPoint } from "./SnapPoint";
+import { SnapPoint } from "./Snapping/SnapPoint";
 import { Status } from "status-hud";
 import { debounce } from "@/utils/debounce";
 
