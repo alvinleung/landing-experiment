@@ -57,7 +57,7 @@ export const VirtualScrollProvider = ({
   // handle wheel input
   useEffect(() => {
     const MAX_DELTA = 100;
-    const SCROLL_STOP_DEBOUNCE = 50;
+    const SCROLL_STOP_DEBOUNCE = 100;
 
     const stopScrollingDebounced = debounce(() => {
       snaptToNearest(virtualScrollValue, snapPoints)
@@ -139,22 +139,6 @@ export const VirtualScrollProvider = ({
   }, []);
 
 
-  useEffect(() => {
-    const cleanup = virtualScrollValue.onChange((state) => {
-      const nearest = getNearestSnapPoint(
-        sortedSnapPoints,
-        -state.target,
-        state.velocity,
-        window.innerHeight / 2
-      );
-
-      Status.log("heading to snappoint", nearest);
-      Status.log("target", -state.target);
-    })
-    return () => {
-      cleanup();
-    }
-  }, [sortedSnapPoints])
   return (
     <VirtualScrollContext.Provider
       value={{
@@ -168,39 +152,61 @@ export const VirtualScrollProvider = ({
   );
 };
 
+interface SnapInstruction {
+  alignment: "top" | "bottom",
+  position: number
+}
+
 function snaptToNearest(virtualScrollValue: AnimatedValue, snapPoints: SnapPoint[]) {
   const vel = virtualScrollValue.getVelocity();
   const target = virtualScrollValue.getTarget();
-  const nearest = getNearestSnapPoint(snapPoints, -target, vel, window.innerHeight);
-  if (nearest) {
-    console.log(`Snapping to`, nearest)
-    const distanceAbs = Math.abs(nearest.position - virtualScrollValue.getCurrent());
-    const lerpResponsiveness = 0.2 * distanceAbs * .0001;
-    console.log(lerpResponsiveness);
-    virtualScrollValue.lerpTo(-nearest.position, .1);
+  const snapInstruciton = getSnapInstruction(snapPoints, -target, vel);
+  console.log(snapInstruciton);
+  if (!snapInstruciton) return;
+
+  const nearest = snapInstruciton.position;
+  if (snapInstruciton.alignment === "top") {
+    virtualScrollValue.lerpTo(-nearest, .1);
+    return;
   }
+  virtualScrollValue.lerpTo(-nearest + window.innerHeight, .1);
 }
 
-
-function getNearestSnapPoint(
+function getSnapInstruction(
   points: SnapPoint[],
   projectedEndPoint: number,
   velocity: number,
-  snapMargin: number = 400
-): SnapPoint | undefined {
-  let targetSnapPoint: SnapPoint | undefined = undefined;
+  snapMargin: number = window.innerHeight,
+  snapThreshold: number = .6,
+): SnapInstruction | undefined {
+  let snapInstruction: SnapInstruction | undefined;
 
   for (let i = 0; i < points.length; i++) {
     const point = points[i];
     const distToPoint = projectedEndPoint - point.position;
+    const hasPastPoint = distToPoint > 0;
 
-    if (Math.abs(distToPoint) > snapMargin) continue;
+    if (Math.abs(distToPoint) > snapMargin || hasPastPoint) continue;
 
-    // const isHeadingTowardPoint = distToPoint * velocity > 0;
     const isHeadingTowardPoint = distToPoint * velocity > 0;
-    if (isHeadingTowardPoint) {
-      targetSnapPoint = point;
+    const snapOverlap = Math.abs(distToPoint / snapMargin);
+    const isOverEnterThreshold = snapOverlap < snapThreshold;
+
+    console.log(snapOverlap);
+    if ((isOverEnterThreshold || isHeadingTowardPoint)) {
+      snapInstruction = {
+        position: point.position,
+        alignment: "top"
+      };
+      continue;
+    }
+
+
+    snapInstruction = {
+      position: point.position,
+      alignment: "bottom"
     }
   }
-  return targetSnapPoint;
+
+  return snapInstruction;
 }

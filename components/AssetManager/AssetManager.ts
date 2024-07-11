@@ -4,8 +4,6 @@ export class AssetManager implements CleanupProtocol {
   private static _instance: AssetManager;
 
   private assetLookup: { [key: string]: Asset } = {};
-  private loadingProgress = 0;
-  private loadedAssetCount = 0;
 
   private constructor() {}
   public static get instance() {
